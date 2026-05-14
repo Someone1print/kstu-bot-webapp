@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Кафедра ПОКС — КГТУ</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1 id="dept-name">Кафедра ПОКС</h1>
+      <p id="dept-sub" class="muted"></p>
+    </header>
+
+    <nav class="tabs">
+      <button class="tab active" data-tab="dirs">📚 Направления</button>
+      <button class="tab" data-tab="faq">❓ FAQ</button>
+      <button class="tab" data-tab="contacts">📞 Контакты</button>
+    </nav>
+
+    <section id="tab-dirs" class="tab-content active">
+      <div class="filters">
+        <input id="search" type="search" placeholder="🔎 Поиск...">
+        <div class="chips" id="level-chips"></div>
+        <div class="chips" id="lang-chips">
+          <button class="chip" data-lang="all">Все языки</button>
+          <button class="chip" data-lang="ru">🇷🇺 Русский</button>
+          <button class="chip" data-lang="en">🇬🇧 Английский</button>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="budget-only"> <span>Только с бюджетом</span>
+        </label>
+      </div>
+      <div id="dirs-list"></div>
+    </section>
+
+    <section id="tab-faq" class="tab-content">
+      <div id="faq-list"></div>
+    </section>
+
+    <section id="tab-contacts" class="tab-content">
+      <div id="contacts-block"></div>
+    </section>
+
+    <footer class="muted">КГТУ им. И. Раззакова · Институт информационных технологий</footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
