@@ -1,27 +1,40 @@
-# Mini App (WebApp) — кафедра ПОКС
+# Mini App (WebApp) — кафедра ПОКС, КГТУ
 
-Веб-витрина с фильтрами по направлениям, FAQ и контактами. Открывается прямо в Telegram.
+Веб-витрина с фильтрами по направлениям подготовки, FAQ и контактами кафедры ПОКС. Открывается прямо в Telegram через бот [@POCSKG_BOT](https://t.me/POCSKG_BOT).
 
-## Деплой на GitHub Pages (бесплатно)
+## Структура
 
-1. Создай отдельный публичный репозиторий, например `kstu-bot-webapp`.
-2. Скопируй сюда `index.html`, `style.css`, `app.js` **и `bot_data.json`** из корня бота.
-3. Settings → Pages → Source: `main` / root → Save.
-4. Через 1–2 минуты получишь URL `https://<username>.github.io/kstu-bot-webapp/`.
-5. Пропиши его в `.env` бота: `WEBAPP_URL=https://<username>.github.io/kstu-bot-webapp/`.
-6. Перезапусти бота — в главном меню появится кнопка «🌐 Открыть мини-приложение».
+| Файл | Назначение |
+|---|---|
+| `index.html` | разметка |
+| `style.css` | стили (адаптируются под тёмную/светлую тему Telegram) |
+| `app.js` | логика: загрузка `bot_data.json`, фильтры, поиск, рендер |
+| `bot_data.json` | контент: направления, FAQ, контакты |
 
-## Синхронизация данных
+## Деплой на GitHub Pages
 
-`bot_data.json` нужно периодически копировать в репо WebApp. Варианты:
-- Вручную — раз в неделю.
-- GitHub Action на бота, который пушит JSON при изменении (см. `.github/workflows/sync.yml` — можно добавить позже).
-- Или хостить и бота, и статику на одном сервере (Oracle Cloud) и отдавать JSON через nginx.
+В этом репозитории: **Settings → Pages → Source: Deploy from a branch → Branch: `main` / `(root)` → Save**.
+
+Через 1–2 минуты URL появится на той же странице (формат: `https://<username>.github.io/kstu-bot-webapp/`).
+
+## Синхронизация контента с ботом
+
+`bot_data.json` хранится в двух местах: рядом с ботом и здесь, в репо Mini App. Когда контент в боте меняется через админ-панель — нужно перезалить файл:
+
+```powershell
+cd C:\Users\Dmitry\PycharmProjects\Tg_bot_for_KSTU
+cp bot_data.json webapp\bot_data.json
+cd webapp
+git commit -am "update data"
+git push
+```
+
+Можно автоматизировать GitHub Action'ом, но это потом.
 
 ## Локальный тест
 
-```bash
+```powershell
 cd webapp
 python -m http.server 8000
 ```
-Открой http://localhost:8000 — без Telegram-обёртки, но всё работает.
+Открой http://localhost:8000 — без Telegram-обёртки, но интерфейс рабочий.
