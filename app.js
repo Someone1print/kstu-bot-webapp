@@ -11,6 +11,32 @@ const state = {
 
 const LEVEL_ICONS = { 'Бакалавриат': '🎓', 'Магистратура': '📚', 'Аспирантура': '🔬' };
 
+// ---- Умный поиск: куски слов + терпимость к разным окончаниям ----
+const RU_ENDINGS = ['ого','его','ому','ему','ыми','ими','ия','ие','ии','ей','ая','яя','ое','ее','ой','ый','ий','ым','им','ам','ям','ах','ях','ом','ем','ов','ев','ью','а','я','о','е','у','ю','ы','и','й','ь']
+  .sort((a, b) => b.length - a.length);
+
+function tokens(t) {
+  return (t || '').toLowerCase().replace(/ё/g, 'е').match(/[а-яa-z0-9]+/g) || [];
+}
+function stem(w) {
+  for (const e of RU_ENDINGS) {
+    if (w.endsWith(e) && w.length - e.length >= 3) return w.slice(0, -e.length);
+  }
+  return w;
+}
+function matchesSearch(qTokens, hay) {
+  const words = tokens(hay);
+  const stems = words.map(stem);
+  return qTokens.every(qt => {
+    const qs = stem(qt);
+    return words.some((w, i) =>
+      w.includes(qt) || (qs.length >= 3 && (stems[i].startsWith(qs) || qs.startsWith(stems[i]))));
+  });
+}
+
+// Перерисовать SVG-иконки Lucide после вставки разметки.
+function refreshIcons() { window.lucide?.createIcons(); }
+
 async function loadData() {
   try {
     // Cache-busting: timestamp в URL + no-store, чтобы CDN/Telegram не отдали закэшированную версию.
@@ -37,6 +63,7 @@ function render() {
   renderDirections();
   renderFaq();
   renderContacts();
+  refreshIcons();
 }
 
 function renderLevelChips() {
@@ -54,6 +81,7 @@ function renderLevelChips() {
 function renderDirections() {
   const list = document.getElementById('dirs-list');
   const dirs = state.data.directions || {};
+  const qTokens = tokens(state.search);
   const items = [];
 
   for (const [level, arr] of Object.entries(dirs)) {
@@ -62,35 +90,40 @@ function renderDirections() {
       if (state.lang === 'ru' && !(d.language || '').includes('Русский')) continue;
       if (state.lang === 'en' && !(d.language || '').includes('Английский')) continue;
       if (state.budgetOnly && !d.budget) continue;
-      if (state.search) {
-        const hay = [d.name, d.code, d.profile, d.language].join(' ').toLowerCase();
-        if (!hay.includes(state.search.toLowerCase())) continue;
+      if (qTokens.length) {
+        const hay = [d.name, d.code, d.profile, d.language].join(' ');
+        if (!matchesSearch(qTokens, hay)) continue;
       }
       items.push({ level, ...d });
     }
   }
 
   if (!items.length) {
-    list.innerHTML = '<div class="empty">😔 Ничего не найдено.<br>Попробуйте изменить фильтры.</div>';
+    list.innerHTML = '<div class="empty">Ничего не найдено.<br>Попробуйте изменить запрос или фильтры.</div>';
     return;
   }
 
   list.innerHTML = items.map(d => `
     <div class="card">
-      <h3>${escape(d.name)}</h3>
-      <div class="row">
-        <span class="badge">${LEVEL_ICONS[d.level] || '📌'} ${escape(d.level)}</span>
-        <span class="badge">${escape(d.code || '—')}</span>
-        <span class="badge">${escape(d.language || '—')}</span>
-        <span class="badge ${d.budget ? 'green' : 'red'}">${d.budget ? '✅ Бюджет' : '❌ Без бюджета'}</span>
-        <span class="badge">⏳ ${escape(d.duration || '—')}</span>
+      <div class="card-head">
+        <span class="level-tag">${LEVEL_ICONS[d.level] || '📌'} ${escape(d.level)}</span>
+        ${d.budget
+          ? '<span class="tag tag-budget"><i data-lucide="badge-check"></i> Есть бюджет</span>'
+          : '<span class="tag tag-plain">Контракт</span>'}
       </div>
-      <div class="row" style="margin-top:8px"><i>${escape(d.profile || '')}</i></div>
-      ${d.cost ? `<div class="row"><span class="badge" style="font-weight:600">💵 ${escape(d.cost)}</span></div>` : ''}
-      ${d.cost_foreign ? `<div class="row" style="font-size:12px"><i>🌍 Для иностранцев: ${escape(d.cost_foreign)}</i></div>` : ''}
-      ${d.url ? `<a class="more" href="${escape(d.url)}" target="_blank" rel="noopener">Подробнее на сайте →</a>` : ''}
+      <h3>${escape(d.name)}</h3>
+      ${d.profile ? `<p class="profile">${escape(d.profile)}</p>` : ''}
+      ${d.code ? `<div class="card-code"><i data-lucide="hash"></i>${escape(d.code)}</div>` : ''}
+      <div class="meta">
+        ${d.language ? `<span class="meta-item"><i data-lucide="languages"></i>${escape(d.language)}</span>` : ''}
+        ${d.duration ? `<span class="meta-item"><i data-lucide="clock"></i>${escape(d.duration)}</span>` : ''}
+        ${d.cost ? `<span class="meta-item"><i data-lucide="wallet"></i>${escape(d.cost)}</span>` : ''}
+      </div>
+      ${d.cost_foreign ? `<div class="meta-foreign"><i data-lucide="globe"></i>Для иностранцев: ${escape(d.cost_foreign)}</div>` : ''}
+      ${d.url ? `<a class="more" href="${escape(d.url)}" target="_blank" rel="noopener">Подробнее на сайте <i data-lucide="arrow-right"></i></a>` : ''}
     </div>
   `).join('');
+  refreshIcons();
 }
 
 function renderFaq() {
