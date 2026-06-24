@@ -9,7 +9,9 @@ const state = {
   search: '',
 };
 
-const LEVEL_ICONS = { 'Бакалавриат': '🎓', 'Магистратура': '📚', 'Аспирантура': '🔬' };
+// Иконки уровней — имена иконок Lucide (без эмодзи).
+const LEVEL_ICONS = { 'Бакалавриат': 'graduation-cap', 'Магистратура': 'book-open', 'Аспирантура': 'microscope' };
+const LEVEL_ICON_FALLBACK = 'bookmark';
 
 // ---- Умный поиск: куски слов + терпимость к разным окончаниям ----
 const RU_ENDINGS = ['ого','его','ому','ему','ыми','ими','ия','ие','ии','ей','ая','яя','ое','ее','ой','ый','ий','ым','им','ам','ям','ах','ях','ом','ем','ов','ев','ью','а','я','о','е','у','ю','ы','и','й','ь']
@@ -47,7 +49,8 @@ async function loadData() {
     state.data = await res.json();
   } catch (e) {
     document.getElementById('dirs-list').innerHTML =
-      `<div class="empty">⚠️ Не удалось загрузить данные.<br>${e}</div>`;
+      `<div class="empty"><i data-lucide="alert-triangle"></i><br>Не удалось загрузить данные.<br>${e}</div>`;
+    refreshIcons();
     return;
   }
   render();
@@ -70,9 +73,12 @@ function renderLevelChips() {
   const wrap = document.getElementById('level-chips');
   const levels = ['all', ...Object.keys(state.data.directions || {})];
   wrap.innerHTML = levels.map(l => {
-    const label = l === 'all' ? 'Все уровни' : `${LEVEL_ICONS[l] || '📌'} ${l}`;
-    return `<button class="chip ${state.level === l ? 'active' : ''}" data-level="${l}">${label}</button>`;
+    const icon = l === 'all' ? 'layers' : (LEVEL_ICONS[l] || LEVEL_ICON_FALLBACK);
+    const label = l === 'all' ? 'Все уровни' : l;
+    return `<button class="chip ${state.level === l ? 'active' : ''}" data-level="${l}">`
+      + `<i data-lucide="${icon}"></i>${escape(label)}</button>`;
   }).join('');
+  refreshIcons();
   wrap.querySelectorAll('.chip').forEach(btn => {
     btn.onclick = () => { state.level = btn.dataset.level; renderLevelChips(); renderDirections(); };
   });
@@ -106,7 +112,7 @@ function renderDirections() {
   list.innerHTML = items.map(d => `
     <div class="card">
       <div class="card-head">
-        <span class="level-tag">${LEVEL_ICONS[d.level] || '📌'} ${escape(d.level)}</span>
+        <span class="level-tag"><i data-lucide="${LEVEL_ICONS[d.level] || LEVEL_ICON_FALLBACK}"></i>${escape(d.level)}</span>
         ${d.budget
           ? '<span class="tag tag-budget"><i data-lucide="badge-check"></i> Есть бюджет</span>'
           : '<span class="tag tag-plain">Контракт</span>'}
@@ -146,22 +152,23 @@ function renderContacts() {
   const c = (state.data.department_info || {}).contact || {};
   const block = document.getElementById('contacts-block');
   const rows = [
-    ['☎️', 'Телефон', c.phone, c.phone ? `tel:${c.phone.replace(/\s/g, '')}` : null],
-    ['📧', 'Email', c.email, c.email ? `mailto:${c.email}` : null],
-    ['📍', 'Адрес', c.address, c.address ? `https://maps.google.com/?q=${encodeURIComponent(c.address)}` : null],
-    ['🌐', 'Сайт', c.website, c.website],
-    ['💬', 'WhatsApp', c.whatsapp, c.whatsapp],
-    ['📸', 'Instagram', c.instagram, c.instagram],
+    ['phone', 'Телефон', c.phone, c.phone ? `tel:${c.phone.replace(/\s/g, '')}` : null],
+    ['mail', 'Email', c.email, c.email ? `mailto:${c.email}` : null],
+    ['map-pin', 'Адрес', c.address, c.address ? `https://maps.google.com/?q=${encodeURIComponent(c.address)}` : null],
+    ['globe', 'Сайт', c.website, c.website],
+    ['message-circle', 'WhatsApp', c.whatsapp, c.whatsapp],
+    ['camera', 'Instagram', c.instagram, c.instagram],
   ];
   block.innerHTML = rows.filter(r => r[2]).map(([icon, label, val, link]) => `
     <div class="contact-row">
-      <span class="icon">${icon}</span>
+      <span class="icon"><i data-lucide="${icon}"></i></span>
       <div>
         <div class="muted" style="font-size:12px">${label}</div>
         ${link ? `<a href="${escape(link)}" target="_blank" rel="noopener">${escape(val)}</a>` : escape(val)}
       </div>
     </div>
   `).join('');
+  refreshIcons();
 }
 
 function escape(s) {

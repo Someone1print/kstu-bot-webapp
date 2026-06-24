@@ -70,10 +70,12 @@ header h1 { font-size: 20px; margin: 0 0 4px; font-weight: 700; }
 
 .chips { display: flex; gap: 8px; flex-wrap: wrap; }
 .chip {
+  display: inline-flex; align-items: center; gap: 6px;
   border: 1px solid var(--border); background: var(--card);
   color: var(--fg); padding: 7px 14px; border-radius: 999px;
   font-size: 13px; cursor: pointer; transition: .15s; white-space: nowrap;
 }
+.chip svg.lucide { width: 15px; height: 15px; vertical-align: 0; }
 .chip.active { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
 
 .toggle {
@@ -95,7 +97,11 @@ header h1 { font-size: 20px; margin: 0 0 4px; font-weight: 700; }
   display: flex; align-items: center; justify-content: space-between;
   gap: 8px; margin-bottom: 10px;
 }
-.level-tag { font-size: 12px; font-weight: 600; color: var(--muted); }
+.level-tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12px; font-weight: 600; color: var(--muted);
+}
+.level-tag svg.lucide { width: 14px; height: 14px; vertical-align: 0; }
 
 /* Бюджет — нейтрально, без «плохо/хорошо» (красный/зелёный) */
 .tag {
@@ -163,9 +169,14 @@ details.faq-item div { font-size: 14px; line-height: 1.5; color: var(--fg); }
   background: var(--card); padding: 12px 14px; border-radius: 12px;
   margin-bottom: 8px; border: 1px solid var(--border);
 }
-.contact-row .icon { font-size: 20px; }
+.contact-row .icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  color: var(--accent);
+}
+.contact-row .icon svg.lucide { width: 20px; height: 20px; vertical-align: 0; }
 .contact-row a { color: var(--link); text-decoration: none; word-break: break-all; }
 
 .empty { text-align: center; color: var(--muted); padding: 30px 10px; font-size: 14px; }
+.empty svg.lucide { width: 28px; height: 28px; opacity: .6; margin-bottom: 6px; }
 
 footer { text-align: center; font-size: 12px; margin-top: 24px; }
