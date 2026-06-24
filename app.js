@@ -39,6 +39,12 @@ function matchesSearch(qTokens, hay) {
 // Перерисовать SVG-иконки Lucide после вставки разметки.
 function refreshIcons() { window.lucide?.createIcons(); }
 
+// Полностью убираем эмодзи из любого текста данных (флаги, пиктограммы, модификаторы).
+const EMOJI_RE = /(\p{Extended_Pictographic}|\p{Regional_Indicator}|[\u{FE00}-\u{FE0F}\u{20D0}-\u{20FF}\u{200D}])/gu;
+function stripEmoji(s) {
+  return String(s ?? '').replace(EMOJI_RE, '').replace(/\s{2,}/g, ' ').trim();
+}
+
 async function loadData() {
   try {
     // Cache-busting: timestamp в URL + no-store, чтобы CDN/Telegram не отдали закэшированную версию.
@@ -58,9 +64,9 @@ async function loadData() {
 
 function render() {
   const info = state.data.department_info || {};
-  document.getElementById('dept-name').textContent = info.name || 'Кафедра';
+  document.getElementById('dept-name').textContent = stripEmoji(info.name) || 'Кафедра';
   document.getElementById('dept-sub').textContent =
-    [info.institute, info.university].filter(Boolean).join(' · ');
+    [info.institute, info.university].map(stripEmoji).filter(Boolean).join(' · ');
 
   renderLevelChips();
   renderDirections();
@@ -141,7 +147,7 @@ function renderFaq() {
       ${Object.entries(qa).map(([q, a]) => `
         <details class="faq-item">
           <summary>${escape(q)}</summary>
-          <div>${a}</div>
+          <div>${stripEmoji(a)}</div>
         </details>
       `).join('')}
     </div>
@@ -172,7 +178,7 @@ function renderContacts() {
 }
 
 function escape(s) {
-  return String(s ?? '').replace(/[&<>"']/g, c =>
+  return stripEmoji(s).replace(/[&<>"']/g, c =>
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
