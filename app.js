@@ -125,7 +125,7 @@ function renderDirections() {
       </div>
       <h3>${escape(d.name)}</h3>
       ${d.profile ? `<p class="profile">${escape(d.profile)}</p>` : ''}
-      ${d.code ? `<div class="card-code"><i data-lucide="hash"></i>${escape(d.code)}</div>` : ''}
+      ${d.code ? `<div class="card-code">Код направления: ${escape(d.code)}</div>` : ''}
       <div class="meta">
         ${d.language ? `<span class="meta-item"><i data-lucide="languages"></i>${escape(d.language)}</span>` : ''}
         ${d.duration ? `<span class="meta-item"><i data-lucide="clock"></i>${escape(d.duration)}</span>` : ''}
